@@ -50,12 +50,7 @@ Thank you for considering contributing to the Laravel framework! The contributio
 
 ## Code of Conduct
 
-
 In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security
-
-This application uses [Laravel Fortify](https://github.com/laravel/fortify) to provide two-factor authentication for user logins. Session data is encrypted and cookies are marked as secure by default. You may override these defaults via the `SESSION_ENCRYPT` and `SESSION_SECURE_COOKIE` environment variables.
 
 ## Security Vulnerabilities
 

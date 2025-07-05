@@ -63,10 +63,6 @@
                                 <input type="checkbox" name="include_expenses" value="1" class="rounded border-gray-300 text-brand-sand-green focus:ring-brand-sand-green" @checked(request('include_expenses'))>
                                 <span class="ml-2 text-sm">Pengeluaran Operasional</span>
                             </label>
-                            <label class="flex items-center">
-                                <input type="checkbox" name="include_tax" value="1" class="rounded border-gray-300 text-brand-sand-green focus:ring-brand-sand-green" @checked(request('include_tax'))>
-                                <span class="ml-2 text-sm">Pajak 11%</span>
-                            </label>
                         </div>
                     </div>
                     <!-- Tombol -->

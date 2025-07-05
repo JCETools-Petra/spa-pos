@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request; // Diubah dari ProfileUpdateRequest
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
+use Illuminate\Validation\Rule; // Ditambahkan untuk validasi
 
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Menampilkan form edit profil.
      */
     public function edit(Request $request): View
     {
@@ -22,23 +23,40 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * Memperbarui informasi profil pengguna.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(Request $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        // PERBAIKAN: Logika validasi dan update disederhanakan dan diperbaiki
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // Validasi langsung di sini
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:2048'],
+        ]);
+
+        // Isi nama baru
+        $user->name = $validated['name'];
+        
+        // Handle upload foto profil baru
+        if ($request->hasFile('avatar')) {
+            // Hapus avatar lama jika ada
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            // Simpan avatar baru dan perbarui path-nya
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $path;
         }
 
-        $request->user()->save();
+        $user->save();
 
         return Redirect::route('profile.edit')->with('status', 'profile-updated');
     }
 
     /**
-     * Delete the user's account.
+     * Menghapus akun pengguna (jika Anda ingin mengaktifkannya).
      */
     public function destroy(Request $request): RedirectResponse
     {
@@ -50,6 +68,11 @@ class ProfileController extends Controller
 
         Auth::logout();
 
+        // Hapus avatar dari storage
+        if ($user->avatar) {
+            Storage::disk('public')->delete($user->avatar);
+        }
+        
         $user->delete();
 
         $request->session()->invalidate();

@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminUserSeeder::class, // Seeder admin yang sudah ada
             BranchAndUserSeeder::class, // <-- PANGGIL SEEDER BARU DI SINI
+            SettingSeeder::class,
         ]);
     }
 }

@@ -12,7 +12,6 @@ class SettingController extends Controller
 {
     public function index()
     {
-        // Ambil semua settings dan ubah ke collection agar mudah diakses di view
         $settings = Setting::all()->keyBy('key');
         return view('admin.settings.index', compact('settings'));
     }
@@ -21,39 +20,35 @@ class SettingController extends Controller
     {
         $request->validate([
             'app_title' => 'required|string|max:255',
-            'app_logo' => 'nullable|image|mimes:png,jpg,jpeg,svg|max:2048', // max 2MB
-            'app_favicon' => 'nullable|image|mimes:ico,png|max:512', // max 512KB
+            'app_logo' => 'nullable|image|mimes:png,jpg,jpeg,svg|max:2048',
+            'app_favicon' => 'nullable|image|mimes:ico,png|max:512',
+            // Validasi untuk ukuran logo
+            'logo_size_sidebar' => 'required|integer|min:20|max:100',
+            'logo_size_login' => 'required|integer|min:30|max:200',
         ]);
 
-        // Simpan atau update judul aplikasi
-        Setting::updateOrCreate(
-            ['key' => 'app_title'],
-            ['value' => $request->input('app_title')]
-        );
+        Setting::updateOrCreate(['key' => 'app_title'], ['value' => $request->input('app_title')]);
+        
+        // Simpan pengaturan ukuran logo
+        Setting::updateOrCreate(['key' => 'logo_size_sidebar'], ['value' => $request->input('logo_size_sidebar')]);
+        Setting::updateOrCreate(['key' => 'logo_size_login'], ['value' => $request->input('logo_size_login')]);
 
-        // Handle upload Logo
         if ($request->hasFile('app_logo')) {
-            $path = $request->file('app_logo')->store('public/logos');
-            // Simpan path yang bisa diakses publik
-            $url = Storage::url($path);
-            Setting::updateOrCreate(
-                ['key' => 'app_logo'],
-                ['value' => $url]
-            );
+            if ($oldLogoPath = Setting::where('key', 'app_logo')->value('value')) {
+                Storage::disk('public')->delete($oldLogoPath);
+            }
+            $path = $request->file('app_logo')->store('logos', 'public');
+            Setting::updateOrCreate(['key' => 'app_logo'], ['value' => $path]);
         }
 
-        // Handle upload Favicon
         if ($request->hasFile('app_favicon')) {
-            $path = $request->file('app_favicon')->store('public/favicons');
-            // Simpan path yang bisa diakses publik
-            $url = Storage::url($path);
-            Setting::updateOrCreate(
-                ['key' => 'app_favicon'],
-                ['value' => $url]
-            );
+             if ($oldFaviconPath = Setting::where('key', 'app_favicon')->value('value')) {
+                Storage::disk('public')->delete($oldFaviconPath);
+            }
+            $path = $request->file('app_favicon')->store('favicons', 'public');
+            Setting::updateOrCreate(['key' => 'app_favicon'], ['value' => $path]);
         }
 
-        // Hapus cache settings agar perubahan langsung terlihat
         Cache::forget('app_settings');
 
         return back()->with('success', 'Pengaturan berhasil diperbarui.');

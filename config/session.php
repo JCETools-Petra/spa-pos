@@ -47,7 +47,7 @@ return [
     |
     */
 
-    'encrypt' => env('SESSION_ENCRYPT', true),
+    'encrypt' => env('SESSION_ENCRYPT', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -169,7 +169,7 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE', true),
+    'secure' => env('SESSION_SECURE_COOKIE'),
 
     /*
     |--------------------------------------------------------------------------

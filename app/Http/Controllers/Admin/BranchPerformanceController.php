@@ -26,7 +26,6 @@ class BranchPerformanceController extends Controller
         $includeExpenses = $request->has('include_expenses');
         $includeProfitSharing = $request->has('include_profit_sharing');
         $includeSalaries = $request->has('include_salaries');
-        $includeTax = $request->has('include_tax');
 
         // Atur rentang tanggal berdasarkan filter periode cepat
         if ($period === 'daily') {
@@ -101,12 +100,6 @@ class BranchPerformanceController extends Controller
                                 ->sum('amount');
                 $deductions['Pengeluaran Operasional'] = $expenseAmount;
                 $totalDeductions += $expenseAmount;
-            }
-
-            if ($includeTax) {
-                $taxAmount = $grossRevenue * 0.11;
-                $deductions['Pajak (11%)'] = $taxAmount;
-                $totalDeductions += $taxAmount;
             }
             
             $netRevenue = $grossRevenue - $totalDeductions;

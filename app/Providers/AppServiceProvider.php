@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use App\Models\Setting;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage; // <-- Tambahkan ini
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,17 +24,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Cek jika tabel settings ada sebelum menjalankan query
         if (Schema::hasTable('settings')) {
-            // Menggunakan cache agar tidak query ke database setiap request
             $settings = Cache::rememberForever('app_settings', function () {
-                // Ambil semua settings dan ubah jadi format key => value
-                return Setting::all()->keyBy('key')->transform(function ($setting) {
+                $settingsCollection = Setting::all()->keyBy('key');
+
+                // PERBAIKAN: Konversi path file menjadi URL yang benar sebelum di-cache
+                if ($settingsCollection->has('app_logo') && $settingsCollection->get('app_logo')->value) {
+                    $settingsCollection->get('app_logo')->value = Storage::url($settingsCollection->get('app_logo')->value);
+                }
+                if ($settingsCollection->has('app_favicon') && $settingsCollection->get('app_favicon')->value) {
+                    $settingsCollection->get('app_favicon')->value = Storage::url($settingsCollection->get('app_favicon')->value);
+                }
+
+                // Transformasi ke format key => value sederhana
+                return $settingsCollection->transform(function ($setting) {
                     return $setting->value;
                 });
             });
 
-            // Bagikan settings ke semua view
             View::share('appSettings', $settings);
         }
     }
